@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Machine Inspection System</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f3f4f8;--card:#fff;--ink:#16193a;--mut:#656a8a;--line:#d9dbe8;--pri:#25307a;--ok:#1f7a4d;--warn:#c27a00;--off:#6b7080;--bad:#b3261e}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10122a;--card:#1a1d3d;--ink:#eceefb;--mut:#a3a8cc;--line:#2f3463;--pri:#8e9bff;--ok:#5fd39a;--warn:#f0b44c;--off:#9aa0b8;--bad:#ff8a80}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Noto Sans KR","Segoe UI",system-ui,sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--pri);color:#fff;display:flex;align-items:center;gap:8px;padding:10px 14px}
+header h1{font-size:17px;margin:0;flex:1}
+button,select,input,textarea{font:inherit;color:inherit}
+.lang{background:#fff;color:var(--pri);border:0;border-radius:20px;padding:6px 14px;font-weight:700;min-height:40px}
+nav{display:flex;background:var(--card);border-bottom:1px solid var(--line)}
+nav button{flex:1;padding:14px 4px;border:0;background:none;font-weight:600;color:var(--mut);border-bottom:3px solid transparent;min-height:48px}
+nav button.on{color:var(--pri);border-color:var(--pri)}
+main{max-width:760px;margin:0 auto;padding:14px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+input[type=date],select{padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--card);min-height:44px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.card h3{margin:0 0 2px;font-size:17px}.cat{color:var(--mut);font-size:13px;margin-bottom:10px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.seg label{border:2px solid var(--line);border-radius:10px;padding:14px 4px;text-align:center;font-weight:700;cursor:pointer;min-height:52px;display:flex;align-items:center;justify-content:center}
+.seg input{position:absolute;opacity:0}
+.seg input:focus-visible+span{outline:3px solid var(--pri)}
+.seg label.ok.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.seg label.warn.on{background:var(--warn);border-color:var(--warn);color:#fff}
+.seg label.off.on{background:var(--off);border-color:var(--off);color:#fff}
+textarea{width:100%;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--card);min-height:64px}
+.btn{border:1px solid var(--pri);background:var(--pri);color:#fff;border-radius:10px;padding:10px 16px;font-weight:600;min-height:44px}
+.btn.sec{background:none;color:var(--pri)}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.thumbs img{width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.net{font-size:12px;opacity:.9}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{background:var(--bg)}
+.wrap{overflow-x:auto}
+.b-ok{color:var(--ok)}.b-warn{color:var(--warn)}.b-off{color:var(--off)}.b-bad{color:var(--bad)}
+.b-ok,.b-warn,.b-off{font-weight:700}
+#mk{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px}
+#mk canvas{max-width:100%;max-height:70vh;touch-action:none;background:#000;border-radius:6px}
+.sheet{background:#fff;color:#000;width:100%;max-width:210mm;margin:0 auto;padding:10mm;border:1px solid var(--line)}
+.sheet h2{margin:0 0 4px;font-size:20px}.sheet .meta{font-size:12px;margin-bottom:8px}
+.sheet th{background:#e9eaf3;color:#000}.sheet td,.sheet th{border-color:#888;font-size:12px}
+.pics{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+.pics div{font-size:11px}.pics img{width:100%;max-height:55mm;object-fit:contain;border:1px solid #888}
+.fl{position:relative;display:inline-flex;align-items:center;overflow:hidden;margin:0 8px 6px 0}
+.fl input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:0}
+details.chk{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:0 10px}
+details.chk summary{padding:12px 0;font-weight:700;cursor:pointer;min-height:44px}
+.gh{margin:10px 0 4px;font-weight:700;color:var(--pri)}
+.it{padding:10px 0;border-top:1px solid var(--line)}.it .n{font-weight:600}.it .cy{font-weight:400;color:var(--mut);font-size:13px}
+.it .mt{font-size:12.5px;color:var(--mut);margin:2px 0 8px}
+.b2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.b2 button{border:2px solid var(--line);background:none;border-radius:10px;min-height:46px;font-weight:700}
+.b2 button.on[data-v=ok]{background:var(--ok);border-color:var(--ok);color:#fff}.b2 button.on[data-v=bad]{background:var(--bad);border-color:var(--bad);color:#fff}
+.inote{width:100%;margin-top:8px;padding:10px;border:1px solid var(--bad);border-radius:8px;background:var(--card)}
+@media print{@page{size:A4;margin:8mm}header,nav,.bar,.noprint{display:none!important}body{background:#fff}main{padding:0;max-width:none}.sheet{border:0;padding:0;max-width:none;width:100%;break-inside:avoid;page-break-after:avoid;max-height:277mm;overflow:hidden}}
+</style></head>
+<body>
+<header><h1 id="ttl"></h1><span class="net" id="net"></span><button class="lang" id="lang"></button></header>
+<nav id="nav"></nav>
+<main id="app"></main>
+<div id="mk"><canvas id="cv"></canvas><div><button class="btn sec" style="background:#fff" id="mkx"></button> <button class="btn" id="mks"></button></div></div>
+<script>
+// ---- 설비 마스터 (카테고리 코드로 확장: 'finishing','utility' 항목만 추가하면 됨) ----
+const CATS={dyeing:{ko:'염색기',es:'Teñido'},finishing:{ko:'가공기',es:'Acabado'},utility:{ko:'공무설비',es:'Servicios'}};
+const MACHINES=[
+ {id:'ATM1',cat:'dyeing',type:'atm',ko:'상압 염색기 #1',es:'Teñidora atmosférica #1'},
+ {id:'ATM2',cat:'dyeing',type:'atm',ko:'상압 염색기 #2',es:'Teñidora atmosférica #2'},
+ {id:'RHP1',cat:'dyeing',type:'rhp',ko:'래피드 고압 염색기 #1',es:'Teñidora Rapid alta presión #1'},
+ {id:'RHP2',cat:'dyeing',type:'rhp',ko:'래피드 고압 염색기 #2',es:'Teñidora Rapid alta presión #2'}];
+
+// ---- 기계별 점검 항목 (엑셀 점검표 기준) c:s=안전 m=기계상태 / cy:d=매일 w=주1회 m=월1회 ----
+const X=(c,ko,es,me,cr,cy='d')=>({c,ko,es,me,cr,cy});
+const K={
+e:X('s','비상정지 버튼 작동','Botón de parada de emergencia','누른 후 정지 확인 (무부하 상태)','즉시 정지, 복귀 정상'),
+cv:X('s','회전부 안전커버','Cubiertas de protección de partes giratorias','육안, 볼트 체결 확인','커버 장착, 파손·이탈 없음'),
+door:X('s','뚜껑·도어 상태 및 체결','Estado y cierre de tapa/puerta','개폐·체결 확인','변형·파손 없음, 정상 체결'),
+il:X('s','도어 인터록 (가압·고온 중 개방 불가)','Enclavamiento de puerta (no abre bajo presión/alta temperatura)','도어 개방 시도로 잠금 확인 (가동 전)','잠금 정상, 해제 조건은 매뉴얼 기준'),
+pk:X('s','도어 패킹·잠금장치','Empaque y mecanismo de cierre de la puerta','육안, 마모·균열 확인','손상·경화·누설 없음'),
+pg:X('s','압력게이지 지침·영점','Manómetro: aguja y punto cero','육안 (무압 상태)','영점 정상, 파손 없음'),
+sv:X('s','안전밸브 상태','Estado de la válvula de seguridad','육안 (작동시험은 월 1회 별도 실시)','누설·고착 없음'),
+hot:X('s','고온 배관·표면 화상 위험 보온/표지','Aislamiento/señalización de superficies calientes','육안','보온재 탈락 없음, 경고표지 부착'),
+st:X('s','스팀 배관 누설·보온 상태','Fugas y aislamiento de tuberías de vapor','육안, 증기 새는 소리 확인','누설 없음, 보온재 탈락 없음'),
+fl:X('s','주변 바닥 미끄럼·적치물','Piso resbaloso y obstáculos alrededor','육안','물·약품 흘림, 적치물 없음'),
+pp:X('s','보호구·세안설비 비치','EPP y lavaojos/ducha de emergencia','육안, 세안설비 작동 확인','보호구 비치, 세안설비 정상'),
+pu:X('m','메인펌프 소음·진동·온도','Ruido, vibración y temperatura de la bomba principal','운전 중 청각·촉감 확인','이상음·과열·진동 없음'),
+mo:X('m','구동부(릴/순환) 모터 상태','Motor de accionamiento (reel/circulación)','운전 중 확인','이상음·진동 없음'),
+nz:X('m','노즐·원단 순환 상태','Boquilla y circulación de la tela','운전 중 확인','원단 정체·엉킴 없음'),
+li:X('m','린트(보풀) 필터 청소','Limpieza del filtro de pelusa','육안, 청소 후 확인','보풀 적체 없음'),
+hx:X('m','열교환기·배관 누수','Fugas en intercambiador de calor y tuberías','육안','누수 없음'),
+ch:X('m','약품탱크·정량펌프','Tanque de químicos y bomba dosificadora','작동·누출 확인','정상 투입, 누출·막힘 없음'),
+vl:X('m','급수·배수 밸브','Válvulas de agua y drenaje','개폐 확인','정상 개폐, 누수 없음'),
+ct:X('m','컨트롤러 화면·알람 이력','Pantalla del controlador e historial de alarmas','화면 확인','알람 없음 (있으면 내용 기록)'),
+cw:X('m','냉각수 계통·냉각 밸브','Sistema de agua de enfriamiento y válvulas','작동·누수 확인','정상 냉각, 누수 없음'),
+ps:X('m','압력 센서','Sensor de presión','표시값과 게이지 비교','허용오차 이내 (기준값: 매뉴얼 기준 입력)','m'),
+sx:X('m','스팀 밸브·스팀트랩','Válvula y trampa de vapor','작동·누설 확인','정상 작동, 누설 없음','w'),
+lv:X('m','수위(레벨) 센서','Sensor de nivel','급수 시 감지 확인','정상 감지','w'),
+lu:X('m','윤활·그리스 급유','Lubricación / engrase','급유 상태 확인','급유 주기 준수','w'),
+tp:X('m','온도 센서 정확도','Precisión del sensor de temperatura','표시값과 기준 온도계 비교','허용오차 이내 (기준값: 매뉴얼 기준 입력)','m')};
+const CHK={atm:'e cv door st fl pp pu mo nz li hx ch vl ct sx lv lu tp'.split(' ').map(k=>K[k]),
+rhp:'e cv il pk pg sv hot st fl pp pu mo nz li hx ch vl ct cw ps sx lv lu tp'.split(' ').map(k=>K[k])};
+const GR={s:{ko:'안전',es:'Seguridad'},m:{ko:'기계 상태',es:'Estado de la máquina'}};
+const M=id=>MACHINES.find(m=>m.id===id);
+const iv=(r,x,no)=>r.it[no]||(x.cy==='d'?'ok':'skip');
+const bad=(m,r)=>m&&r.it?CHK[m.type].map((x,i)=>r.it[i+1]==='bad'?'#'+(i+1)+' '+x[lang]+(r.nt[i+1]?' ('+r.nt[i+1]+')':''):'').filter(Boolean):[];
+const bl=(m,r)=>bad(m,r).map(x=>'<br>• '+esc(x)).join('');
+function itemsHtml(m,r){const L=CHK[m.type];let g='',n=L.filter((x,i)=>r.it[i+1]==='bad').length;
+ return `<details class="chk" data-id="${m.id}"><summary>${t('items')} (${L.length}) · ${t('bad')} ${n}</summary>`+L.map((x,i)=>{const no=i+1,v=iv(r,x,no);let h='';
+  if(x.c!==g){g=x.c;h=`<div class="gh">${GR[g][lang]}</div>`}
+  return h+`<div class="it ${v}" data-no="${no}"><div class="n">${no}. ${esc(x[lang])} <span class="cy">${t('cyc')[x.cy]}${v==='skip'?' · '+t('skip'):''}</span></div><div class="mt">${esc(x.me)} → ${esc(x.cr)}</div><div class="b2"><button data-v="ok" class="${v==='ok'?'on':''}">${t('ok')}</button><button data-v="bad" class="${v==='bad'?'on':''}">${t('bad')}</button></div>${v==='bad'?`<input class="inote" placeholder="${t('memo')}" value="${esc(r.nt[no])}">`:''}</div>`}).join('')+`</details>`}
+
+const T={ko:{t:'설비 점검 시스템',items:'점검 항목',bad:'이상',skip:'미실시',cyc:{d:'매일',w:'주 1회',m:'월 1회'},insp:'점검',rep:'보고서',his:'이력',ok:'정상',warn:'점검 필요',off:'미가동',memo:'메모 (이상 내용, 조치 요구)',photo:'사진 촬영',album:'앨범에서 선택',mark:'표시하기',saved:'저장됨',online:'온라인',offline:'오프라인',date:'날짜',from:'시작일',to:'종료일',all:'전체 기계',issue:'이상만',search:'검색',csv:'엑셀 다운로드',print:'A4 인쇄 / PDF',none:'기록이 없습니다',machine:'기계',status:'상태',note:'메모',title:'염색기 일일 점검 보고서',prob:'조치 필요 기계',noprob:'이상 없음',unins:'미입력',cancel:'취소',apply:'적용',pending:'기기에 저장됨 (온라인 연결 시 동기화 대상)',range:{d:'일',w:'주',m:'월'},tip:'손가락으로 이상 부위를 그리세요'},
+es:{t:'Sistema de Inspección de Máquinas',items:'Ítems de inspección',bad:'Falla',skip:'No realizado',cyc:{d:'Diario',w:'Semanal',m:'Mensual'},insp:'Inspección',rep:'Informe',his:'Historial',ok:'Normal',warn:'Revisar',off:'Apagada',memo:'Notas (falla, acción requerida)',photo:'Tomar foto',album:'Elegir de galería',mark:'Marcar',saved:'Guardado',online:'En línea',offline:'Sin conexión',date:'Fecha',from:'Desde',to:'Hasta',all:'Todas las máquinas',issue:'Solo fallas',search:'Buscar',csv:'Descargar Excel',print:'Imprimir A4 / PDF',none:'Sin registros',machine:'Máquina',status:'Estado',note:'Nota',title:'Informe diario de inspección de teñidoras',prob:'Máquinas que requieren acción',noprob:'Sin novedades',unins:'Sin registro',cancel:'Cancelar',apply:'Aplicar',pending:'Guardado en el equipo (se sincroniza al conectarse)',range:{d:'Día',w:'Semana',m:'Mes'},tip:'Dibuje con el dedo sobre la falla'}};
+let lang=(()=>{try{return localStorage.getItem('lang')||'ko'}catch(e){return 'ko'}})(),tab='insp';
+const today=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+let date=today(),hFrom=today(),hTo=today(),hM='',hIss=false,hRange='d';
+const t=k=>T[lang][k],$=s=>document.querySelector(s),mn=m=>m[lang];
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// ---- IndexedDB (오프라인 저장) ----
+let db;const open=()=>new Promise(r=>{const q=indexedDB.open('inspect',1);q.onupgradeneeded=()=>q.result.createObjectStore('rec',{keyPath:'k'});q.onsuccess=()=>{db=q.result;r()};q.onerror=()=>r()});
+const store=m=>db.transaction('rec',m).objectStore('rec');
+const getAll=()=>new Promise(r=>{if(!db)return r([]);const q=store('readonly').getAll();q.onsuccess=()=>r(q.result);q.onerror=()=>r([])});
+const put=rec=>new Promise(r=>{if(!db)return r();rec.u=Date.now();rec.sync=false;const q=store('readwrite').put(rec);q.onsuccess=q.onerror=()=>r()});
+let recs={};const load=async()=>{recs={};(await getAll()).forEach(x=>recs[x.k]=x)};
+const rec=(d,id)=>{const r=recs[d+'|'+id]||{k:d+'|'+id,d,id,s:'',memo:'',ph:[]};r.it=r.it||{};r.nt=r.nt||{};return r};
+const save=async r=>{recs[r.k]=r;await put(r)};
+const sl=s=>s?`<span class="b-${s}">${t(s)}</span>`:`<span style="color:#888">${t('unins')}</span>`;
+// ---- 화면 ----
+function chrome(){document.documentElement.lang=lang;$('#ttl').textContent=t('t');$('#lang').textContent=lang==='ko'?'ES':'KO';
+ $('#nav').innerHTML=[['insp','insp'],['rep','rep'],['his','his']].map(([k,l])=>`<button class="${tab===k?'on':''}" data-t="${k}">${t(l)}</button>`).join('');
+ $('#net').textContent=navigator.onLine?'● '+t('online'):'○ '+t('offline')}
+function render(){chrome();({insp:vInsp,rep:vRep,his:vHis})[tab]()}
+function vInsp(){
+ let h=`<div class="bar"><label>${t('date')} <input type="date" id="dt" value="${date}"></label></div>`;
+ for(const c in CATS){const ms=MACHINES.filter(m=>m.cat===c);if(!ms.length)continue;
+  h+=ms.map(m=>{const r=rec(date,m.id);
+   return `<div class="card" data-id="${m.id}"><h3>${esc(mn(m))}</h3><div class="cat">${CATS[c][lang]}</div>
+   <div class="seg">${['ok','warn','off'].map(s=>`<label class="${s} ${r.s===s?'on':''}"><input type="radio" name="s${m.id}" value="${s}" ${r.s===s?'checked':''}><span>${t(s)}</span></label>`).join('')}</div>
+   <textarea placeholder="${t('memo')}">${esc(r.memo)}</textarea>
+   ${itemsHtml(m,r)}<div class="thumbs">${r.ph.map((p,i)=>`<img src="${p}" data-i="${i}" alt="">`).join('')}</div>
+   <div style="margin-top:10px"><label class="btn sec fl">📷 ${t('photo')}<input type="file" accept="image/*" capture="environment"></label><label class="btn sec fl">🖼️ ${t('album')}<input type="file" accept="image/*"></label>
+   ${r.ph.length?`<span class="net" style="color:var(--mut)"> ${t('tip')} ↑</span>`:''}</div></div>`}).join('')}
+ $('#app').innerHTML=h+`<div class="net" style="color:var(--mut)">${t('pending')}</div>`}
+function vRep(){
+ const rows=MACHINES.map(m=>({m,r:rec(date,m.id)}));const pr=rows.filter(x=>bad(x.m,x.r).length||x.r.s==='warn'||(x.r.s==='off'&&(x.r.memo||x.r.ph.length))||x.r.ph.length);
+ $('#app').innerHTML=`<div class="bar"><input type="date" id="dt" value="${date}"><button class="btn" id="pr">${t('print')}</button></div>
+ <div class="sheet"><h2>${t('title')}</h2><div class="meta">${t('date')}: ${date}</div>
+ <table><tr><th>${t('machine')}</th><th>${t('status')}</th><th>${t('note')}</th></tr>${rows.map(x=>`<tr><td>${esc(mn(x.m))}</td><td>${sl(x.r.s)}</td><td>${esc(x.r.memo)}${bl(x.m,x.r)}</td></tr>`).join('')}</table>
+ <h3 style="font-size:14px;margin:10px 0 0">${t('prob')}</h3>${pr.length?pr.map(x=>`<div style="margin-top:6px;font-size:12px"><b>${esc(mn(x.m))}</b> — ${esc(x.r.memo)}${bl(x.m,x.r)}<div class="pics">${x.r.ph.map(p=>`<div><img src="${p}" alt=""></div>`).join('')}</div></div>`).join(''):`<div style="font-size:12px">${t('noprob')}</div>`}</div>`}
+function range(){const d=new Date(hTo);if(hRange==='w')d.setDate(d.getDate()-6);if(hRange==='m')d.setMonth(d.getMonth()-1);return d.toISOString().slice(0,10)}
+function hist(){return Object.values(recs).filter(r=>r.d>=hFrom&&r.d<=hTo&&(!hM||r.id===hM)&&(!hIss||r.s==='warn'||r.s==='off'||Object.values(r.it||{}).includes('bad'))).sort((a,b)=>b.d.localeCompare(a.d)||a.id.localeCompare(b.id))}
+function vHis(){const l=hist();
+ $('#app').innerHTML=`<div class="bar"><label>${t('from')} <input type="date" id="hf" value="${hFrom}"></label><label>${t('to')} <input type="date" id="ht" value="${hTo}"></label></div>
+ <div class="bar">${['d','w','m'].map(k=>`<button class="btn sec" data-r="${k}">${t('range')[k]}</button>`).join('')}
+ <select id="hm"><option value="">${t('all')}</option>${MACHINES.map(m=>`<option value="${m.id}" ${hM===m.id?'selected':''}>${esc(mn(m))}</option>`).join('')}</select>
+ <label><input type="checkbox" id="hi" ${hIss?'checked':''}> ${t('issue')}</label><button class="btn" id="csv">${t('csv')}</button></div>
+ <div class="wrap card">${l.length?`<table><tr><th>${t('date')}</th><th>${t('machine')}</th><th>${t('status')}</th><th>${t('note')}</th></tr>${l.map(r=>`<tr><td>${r.d}</td><td>${esc(mn(MACHINES.find(m=>m.id===r.id)||{ko:r.id,es:r.id}))}</td><td>${sl(r.s)}</td><td>${esc(r.memo)}${bl(M(r.id),r)}${r.ph.length?' 📷'+r.ph.length:''}</td></tr>`).join('')}</table>`:t('none')}</div>`}
+// ---- 이벤트 ----
+$('#lang').onclick=()=>{lang=lang==='ko'?'es':'ko';try{localStorage.setItem('lang',lang)}catch(e){}render()};
+$('#nav').onclick=e=>{const b=e.target.closest('button');if(b){tab=b.dataset.t;render()}};
+addEventListener('online',chrome);addEventListener('offline',chrome);
+$('#app').addEventListener('change',async e=>{
+ const el=e.target;
+ if(el.id==='dt'){date=el.value||today();return render()}
+ if(el.id==='hf'){hFrom=el.value;return vHis()}if(el.id==='ht'){hTo=el.value;return vHis()}
+ if(el.id==='hm'){hM=el.value;return vHis()}if(el.id==='hi'){hIss=el.checked;return vHis()}
+ const c=el.closest('.card[data-id]');if(!c)return;const r=rec(date,c.dataset.id);
+ if(el.type==='radio'){r.s=el.value;await save(r);c.querySelectorAll('.seg label').forEach(l=>l.classList.toggle('on',l.querySelector('input').checked))}
+ if(el.type==='file'&&el.files[0]){const f=el.files[0];el.value='';
+  try{r.ph.push(await shrink(f));await save(r);c.querySelector('.thumbs').innerHTML=r.ph.map((p,i)=>`<img src="${p}" data-i="${i}" alt="">`).join('')}
+  catch(err){alert(lang==='ko'?'사진을 불러오지 못했습니다. 다른 사진으로 다시 시도하세요.':'No se pudo cargar la foto. Intente con otra.')}}});
+$('#app').addEventListener('input',async e=>{if(e.target.classList.contains('inote')){const c=e.target.closest('.card[data-id]'),r=rec(date,c.dataset.id);r.nt[e.target.closest('.it').dataset.no]=e.target.value;return save(r)}
+ if(e.target.tagName==='TEXTAREA'){const c=e.target.closest('.card');const r=rec(date,c.dataset.id);r.memo=e.target.value;await save(r)}});
+function setItem(card,no,v){const r=rec(date,card.dataset.id),m=M(card.dataset.id);r.it[no]=v;
+ if(v==='bad'&&r.s!=='off')r.s='warn';save(r);
+ const o=card.querySelector('details').open;card.querySelector('details').outerHTML=itemsHtml(m,r);card.querySelector('details').open=o;
+ card.querySelectorAll('.seg label').forEach(l=>{const i=l.querySelector('input');i.checked=i.value===r.s;l.classList.toggle('on',i.checked)})}
+$('#app').addEventListener('click',e=>{
+ const ib=e.target.closest('.it button');if(ib){const it=ib.closest('.it'),card=ib.closest('.card[data-id]');return setItem(card,+it.dataset.no,ib.classList.contains('on')&&ib.dataset.v==='bad'?'ok':ib.dataset.v)}
+ if(e.target.id==='pr')return print();
+ if(e.target.id==='csv')return csv();
+ const rb=e.target.closest('[data-r]');if(rb){hRange=rb.dataset.r;hFrom=range();return vHis()}
+ if(e.target.tagName==='IMG'&&e.target.dataset.i!==undefined){const c=e.target.closest('.card');mark(c.dataset.id,+e.target.dataset.i)}});
+function shrink(f){return new Promise((res,rej)=>{const im=new Image();im.onerror=()=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(f)};im.onload=()=>{const k=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.75));URL.revokeObjectURL(im.src)};im.src=URL.createObjectURL(f)})}
+// ---- 사진 위 손가락 마킹 ----
+let mt=null;
+function mark(id,i){const r=rec(date,id),cv=$('#cv'),x=cv.getContext('2d'),im=new Image();
+ im.onload=()=>{cv.width=im.width;cv.height=im.height;x.drawImage(im,0,0);$('#mk').style.display='flex'};im.src=r.ph[i];mt={id,i};
+ x.lineWidth=Math.max(4,im.width/120);x.strokeStyle='#ff2d2d';x.lineCap='round';x.lineJoin='round'}
+(()=>{const cv=$('#cv');let on=false;const p=e=>{const b=cv.getBoundingClientRect();return[(e.clientX-b.left)*cv.width/b.width,(e.clientY-b.top)*cv.height/b.height]};
+ cv.onpointerdown=e=>{on=true;const x=cv.getContext('2d');x.lineWidth=Math.max(4,cv.width/120);x.strokeStyle='#ff2d2d';x.lineCap=x.lineJoin='round';x.beginPath();x.moveTo(...p(e));cv.setPointerCapture(e.pointerId)};
+ cv.onpointermove=e=>{if(!on)return;const x=cv.getContext('2d');x.lineTo(...p(e));x.stroke()};
+ cv.onpointerup=()=>on=false;
+ $('#mkx').onclick=()=>$('#mk').style.display='none';
+ $('#mks').onclick=async()=>{const r=rec(date,mt.id);r.ph[mt.i]=cv.toDataURL('image/jpeg',.8);await save(r);$('#mk').style.display='none';vInsp()}})();
+function csv(){const q=s=>'"'+String(s||'').replace(/"/g,'""')+'"';
+ const rows=[[t('date'),t('machine'),t('status'),t('note')].map(q).join(',')].concat(hist().map(r=>[r.d,mn(MACHINES.find(m=>m.id===r.id)||{ko:r.id,es:r.id}),r.s?t(r.s):'',r.memo+' '+bad(M(r.id),r).join('; ')].map(q).join(',')));
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.join('\r\n')],{type:'text/csv'}));a.download=`inspection_${hFrom}_${hTo}.csv`;a.click()}
+$('#mkx').textContent=t('cancel');$('#mks').textContent=t('apply');
+open().then(load).then(render);
+</script></body></html>
